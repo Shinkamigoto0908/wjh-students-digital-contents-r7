@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>統合UI フル版 ローディング修正版</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<style>
+html, body {
+  margin:0; padding:0;
+  width:100vw; height:100vh;
+  background:#ccc;
+  overflow:hidden;
+}
+
+#parentContainer {
+  position:absolute;
+  width:1920px; height:1080px;
+  background:#fff;
+  left:50%; top:50%;
+  transform-origin:50% 50%;
+  overflow:hidden;
+}
+
+/* メニュー */
+#menu {
+  position:absolute;
+  top:0; left:0;
+  width:1920px; height:1080px;
+  background:url("svg/interface/wall_paper.svg") no-repeat center center;
+  background-size:cover;
+  display:none;
+}
+
+/* メインボタン */
+.menu-btn {
+  position:absolute;
+  width:596px; height:103px;
+  cursor:pointer;
+}
+#btn1 { left:48.9px; top:158.2px; }
+#btn2 { left:48.9px; top:276.4px; }
+
+/* サイドボタン */
+.side-btn {
+  position:absolute;
+  width:357px; height:62px;
+  cursor:pointer;
+  right:1536.3px;
+}
+#btnHelp { top:907.4px; }
+#btnManual { top:807.4px; }
+#btnVersion { top:707.4px; }
+
+/* iframe */
+#contentFrame {
+  position:absolute;
+  top:0; left:0;
+  width:1920px; height:1080px;
+  border:none; outline:none;
+  background:#fff;
+  display:none;
+  z-index:5;
+}
+
+/* close ボタン */
+#closeBtn, #helpClose, #modalClose {
+  width:65px; height:65px;
+  cursor:pointer;
+  position:absolute;
+  top:16px; right:16px;
+  display:none;
+  z-index:9998;
+}
+
+/* ヘルプ全画面 */
+#helpFull {
+  display:none; position:absolute;
+  top:0; left:0;
+  width:1920px; height:1080px;
+  background:#fff;
+  z-index:55;
+}
+#helpFull img { width:100%; height:100%; }
+
+/* ローディング */
+#loadingOverlay {
+  position:absolute;
+  top:0; left:0;
+  width:1920px; height:1080px;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+.pulse-ring {
+  width:65px; height:65px;
+  border:4px solid #3498db;
+  border-radius:50%;
+  animation:pulse 1s ease-out infinite;
+  opacity:0;
+}
+@keyframes pulse {
+  0% { transform:scale(0); opacity:0.8; }
+  80% { transform:scale(1.5); opacity:0; }
+  100% { opacity:0; }
+}
+
+/* モーダル横長 */
+#modalContainer {
+  display:none;
+  position:absolute; top:0; left:0;
+  width:1920px; height:1080px;
+  background:rgba(0,0,0,0.7);
+  z-index:100;
+  align-items:center;
+  justify-content:center;
+}
+#modalContent {
+  position:relative;
+  width:800px; max-width:90%; min-width:500px;
+  background:#fff; border-radius:10px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:30px;
+  font-size:24px;
+}
+#modalInner { text-align:center; padding:10px; }
+</style>
+</head>
+<body>
+<div id="parentContainer">
+
+  <!-- ローディング -->
+  <div id="loadingOverlay"><div class="pulse-ring"></div></div>
+
+  <!-- メニュー -->
+  <div id="menu">
+    <img id="btn1" class="menu-btn" src="svg/interface/1_tougo_aisho.svg" alt="">
+    <img id="btn2" class="menu-btn" src="svg/interface/2_soran.svg" alt="">
+    <img id="btnHelp" class="side-btn" src="svg/interface/contents_help.svg" alt="">
+    <img id="btnManual" class="side-btn" src="svg/interface/manual.svg" alt="">
+    <img id="btnVersion" class="side-btn" src="svg/interface/version.svg" alt="">
+  </div>
+
+  <!-- iframe -->
+  <iframe id="contentFrame"></iframe>
+
+  <!-- close ボタン -->
+  <img id="closeBtn" src="svg/interface/close.svg" alt="">
+  <img id="helpClose" src="svg/interface/close.svg" alt="">
+  <img id="modalClose" src="svg/interface/close.svg" alt="">
+
+  <!-- モーダル -->
+  <div id="modalContainer">
+    <div id="modalContent">
+      <div id="modalInner"></div>
+    </div>
+  </div>
+
+  <!-- ヘルプ全画面 -->
+  <div id="helpFull">
+    <img src="svg/interface/modal.svg" alt="">
+  </div>
+
+</div>
+
+<script>
+// リサイズ
+function resizeContainer(){
+  const vw=window.innerWidth, vh=window.innerHeight;
+  const baseW=1920, baseH=1080, ratio=baseW/baseH;
+  let scale=(vw/vh>ratio)? vh/baseH: vw/baseW;
+  document.getElementById('parentContainer').style.transform=`translate(-50%,-50%) scale(${scale})`;
+}
+window.addEventListener('resize', resizeContainer);
+window.addEventListener('load', resizeContainer);
+
+// 要素
+const menu = document.getElementById("menu");
+const frame = document.getElementById("contentFrame");
+const closeBtn = document.getElementById("closeBtn");
+const loading = document.getElementById("loadingOverlay");
+const btnHelp = document.getElementById("btnHelp");
+const btnManual = document.getElementById("btnManual");
+const btnVersion = document.getElementById("btnVersion");
+const modal = document.getElementById("modalContainer");
+const modalInner = document.getElementById("modalInner");
+const modalClose = document.getElementById("modalClose");
+const helpFull = document.getElementById("helpFull");
+const helpClose = document.getElementById("helpClose");
+
+// サイドボタン表示
+function updateSideButtons(){
+  const disp=menu.style.display==="block"?"block":"none";
+  btnHelp.style.display=disp;
+  btnManual.style.display=disp;
+  btnVersion.style.display=disp;
+}
+
+// ローディング時間
+function getRandomDelay(){
+  if(!navigator.onLine) return Infinity;
+  let delay=1500;
+  if(navigator.connection){
+    const type=navigator.connection.effectiveType;
+    if(type==="slow-2g"||type==="2g") delay=Math.random()*(5000-3000)+3000;
+    else if(type==="3g") delay=Math.random()*(3000-2000)+2000;
+    else delay=Math.random()*(2000-1500)+1500;
+  }else{ delay=Math.random()*(2000-1500)+1500; }
+  return delay;
+}
+function hideLoading(delay,callback){
+  if(delay===Infinity) return;
+  setTimeout(()=>{
+    loading.style.display="none";
+    if(callback) callback();
+  },delay);
+}
+
+// 初回ロードは3秒
+window.addEventListener("load",()=>{
+  loading.style.display="flex";
+  hideLoading(3000,()=>{
+    menu.style.display="block"; updateSideButtons();
+  });
+});
+
+// iframe 開閉
+function openIframe(url){
+  loading.style.display="flex";
+  hideLoading(getRandomDelay(),()=>{
+    frame.src=url;
+    frame.style.display="block";
+    menu.style.display="none";
+    closeBtn.style.display="block";
+    updateSideButtons();
+  });
+}
+function closeIframe(){
+  loading.style.display="flex";
+  requestAnimationFrame(()=>{
+    hideLoading(getRandomDelay(),()=>{
+      frame.src="";
+      frame.style.display="none";
+      closeBtn.style.display="none";
+      menu.style.display="block";
+      updateSideButtons();
+    });
+  });
+}
+
+// メインボタン
+document.getElementById("btn1").addEventListener("click",()=>{openIframe("https://shinkamigoto0908.github.io/wjh-sf-tougo-kinen-aisho-song-2024/");});
+document.getElementById("btn2").addEventListener("click",()=>{openIframe("https://shinkamigoto0908.github.io/wjh-sf-nanchu-2025/");});
+closeBtn.addEventListener("click",closeIframe);
+
+// ヘルプ全画面
+btnHelp.addEventListener("click",()=>{
+  loading.style.display="flex";
+  requestAnimationFrame(()=>{
+    hideLoading(getRandomDelay(),()=>{
+      helpFull.style.display="block";
+      helpClose.style.display="block";
+      menu.style.display="none";
+      updateSideButtons();
+    });
+  });
+});
+helpClose.addEventListener("click",()=>{
+  loading.style.display="flex";
+  requestAnimationFrame(()=>{
+    hideLoading(getRandomDelay(),()=>{
+      helpFull.style.display="none";
+      helpClose.style.display="none";
+      menu.style.display="block";
+      updateSideButtons();
+    });
+  });
+});
+
+// バージョンモーダル
+btnVersion.addEventListener("click",()=>{
+  loading.style.display="flex";
+  requestAnimationFrame(()=>{
+    hideLoading(getRandomDelay(),()=>{
+      modal.style.display="flex";
+      modalInner.innerHTML=`
+        <h2>バージョン:1.0.0</h2>
+        <p>利用可能期間:2025/12/31まで</p>
+        <p>校内ライセンス:利用可能</p>
+        <p>最終アップデート日:2025/09/19</p>
+      `;
+      modalClose.style.display="block";
+      menu.style.display="none";
+      updateSideButtons();
+    });
+  });
+});
+
+// マニュアル
+btnManual.addEventListener("click",()=>{
+  alert("マニュアルPDFは作成中です。リンクは後で設定します。");
+});
+
+// モーダル閉じる
+modalClose.addEventListener("click",()=>{
+  loading.style.display="flex";
+  requestAnimationFrame(()=>{
+    hideLoading(getRandomDelay(),()=>{
+      modal.style.display="none";
+      modalClose.style.display="none";
+      menu.style.display="block";
+      updateSideButtons();
+    });
+  });
+});
+</script>
+</body>
+</html>
