@@ -22,7 +22,7 @@
     transform-origin: 50% 50%;
     transform: translate(-50%, -50%);
     overflow: hidden;
-    background: #000;
+    background: #fff;
   }
 
   #background {
@@ -34,7 +34,6 @@
     z-index: 0;
   }
 
-  /* 左ボタン */
   .menu-btn {
     position: absolute;
     width: 354px;
@@ -52,7 +51,6 @@
     height: 76.9px;
   }
 
-  /* 右ボタン */
   .svg-btn {
     position: absolute;
     width: 207.1px;
@@ -68,7 +66,6 @@
     opacity: 0.5;
   }
 
-  /* プレビュー領域 */
   #previewContainer {
     position: absolute;
     width: 1269.7px;
@@ -92,14 +89,52 @@
     pointer-events: none;
   }
 
-  #noContentMsg {
-    font-size: 35px;
-    color: #333;
-    text-align: center;
+  #iframeLoader {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(100, 100, 100, 0.4);
     display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 8;
   }
 
-  /* フルプレビュー */
+  #pageLoader {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(100, 100, 100, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+
+  .spinner {
+    width: 60px;
+    height: 60px;
+    border: 6px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #noContentMsg {
+    font-size: 35px;
+    color: #444;
+    background: #f2f2f2;
+    width: 100%;
+    height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+  }
+
   #fullscreenOverlay {
     position: absolute;
     width: 1920px;
@@ -120,7 +155,6 @@
     pointer-events: auto;
   }
 
-  /* 閉じるボタン */
   #closeBtn {
     position: absolute;
     width: 55.3px;
@@ -137,10 +171,12 @@
 </style>
 </head>
 <body>
+  <div id="pageLoader"><div class="spinner"></div></div>
+
   <div id="parentContainer">
     <div id="background"></div>
 
-    <!-- 左ボタン8枚 -->
+    <!-- 左ボタン -->
     <div id="selectBtn1" class="menu-btn" style="top:139.5px; background-image:url('1_tougo.png');"></div>
     <div id="selectBtn2" class="menu-btn" style="top:210.3px; background-image:url('2_new_wjh_soran.png');"></div>
     <div id="selectBtn3" class="menu-btn" style="top:281.1px; background-image:url('3.png');"></div>
@@ -159,15 +195,13 @@
     <div id="svgBtn6" class="svg-btn semi-transparent" style="top:484px; background-image:url('6.svg');"></div>
     <div id="svgBtn8" class="svg-btn semi-transparent" style="top:552.9px; background-image:url('8.svg');"></div>
     <div id="svgBtn9" class="svg-btn" style="top:621.8px; background-image:url('9.svg');"></div>
-    <!-- ★ 半透明解除＆リンク設定済み -->
     <div id="svgBtn10" class="svg-btn" style="top:690.7px; background-image:url('10.svg');"></div>
-
-    <!-- バージョン -->
     <div id="versionBtn" class="svg-btn" style="width:207.1px; height:69px; left:1702.8px; top:1004.2px; background-image:url('version.svg');"></div>
 
     <!-- プレビュー -->
     <div id="previewContainer">
       <iframe id="previewFrame"></iframe>
+      <div id="iframeLoader"><div class="spinner"></div></div>
       <div id="noContentMsg">表示できるものがありません</div>
     </div>
 
@@ -176,95 +210,121 @@
       <iframe id="fullscreenFrame"></iframe>
     </div>
 
-    <!-- 閉じる -->
     <div id="closeBtn"></div>
   </div>
 
 <script>
-  // ===== リサイズ =====
-  function resizeContainer() {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const baseWidth = 1920;
-    const baseHeight = 1080;
-    const ratio = baseWidth / baseHeight;
-    let scale;
-    if (vw / vh > ratio) scale = vh / baseHeight;
-    else scale = vw / baseWidth;
-    document.getElementById('parentContainer').style.transform =
-      `translate(-50%, -50%) scale(${scale})`;
-  }
-  window.addEventListener('resize', resizeContainer);
-  window.addEventListener('load', resizeContainer);
+const pageLoader = document.getElementById("pageLoader");
+const previewFrame = document.getElementById("previewFrame");
+const iframeLoader = document.getElementById("iframeLoader");
+const noContentMsg = document.getElementById("noContentMsg");
+const fullscreenOverlay = document.getElementById("fullscreenOverlay");
+const fullscreenFrame = document.getElementById("fullscreenFrame");
+const closeBtn = document.getElementById("closeBtn");
 
-  // ===== 左ボタン設定 =====
-  const selectBtns = [
-    { el: document.getElementById("selectBtn1"), url: "https://shinkamigoto0908.github.io/wjh-sf-tougo-kinen-aisho-song-2024/" },
-    { el: document.getElementById("selectBtn2"), url: "https://shinkamigoto0908.github.io/wjh-sf-nanchu-2025/" },
-    { el: document.getElementById("selectBtn3"), url: "" },
-    { el: document.getElementById("selectBtn4"), url: "" },
-    { el: document.getElementById("selectBtn5"), url: "" },
-    { el: document.getElementById("selectBtn6"), url: "" },
-    { el: document.getElementById("selectBtn7"), url: "https://shinkamigoto0908.github.io/eig-dgc-r7-the_galaxy_express_999/" },
-    { el: document.getElementById("selectBtn8"), url: "https://shinkamigoto0908.github.io/eig-dgc-r7-good_time/" }
-  ];
+// ページロードスピナー
+window.addEventListener("load", () => {
+  setTimeout(() => { pageLoader.style.display = "none"; }, 500);
+});
 
-  const previewFrame = document.getElementById("previewFrame");
-  const noContentMsg = document.getElementById("noContentMsg");
-  const fullscreenOverlay = document.getElementById("fullscreenOverlay");
-  const fullscreenFrame = document.getElementById("fullscreenFrame");
-  const closeBtn = document.getElementById("closeBtn");
+// ===== リサイズ =====
+function resizeContainer() {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const baseWidth = 1920;
+  const baseHeight = 1080;
+  const ratio = baseWidth / baseHeight;
+  let scale;
+  if (vw / vh > ratio) scale = vh / baseHeight;
+  else scale = vw / baseWidth;
+  document.getElementById('parentContainer').style.transform =
+    `translate(-50%, -50%) scale(${scale})`;
+}
+window.addEventListener('resize', resizeContainer);
+window.addEventListener('load', resizeContainer);
 
-  selectBtns.forEach(btnObj => {
-    btnObj.el.addEventListener("click", () => {
-      selectBtns.forEach(b => b.el.classList.remove("selected"));
-      btnObj.el.classList.add("selected");
+// ===== 左ボタン設定 =====
+const selectBtns = [
+  { el: document.getElementById("selectBtn1"), url: "https://shinkamigoto0908.github.io/wjh-sf-tougo-kinen-aisho-song-2024/" },
+  { el: document.getElementById("selectBtn2"), url: "https://shinkamigoto0908.github.io/wjh-sf-nanchu-2025/" },
+  { el: document.getElementById("selectBtn3"), url: "" },
+  { el: document.getElementById("selectBtn4"), url: "" },
+  { el: document.getElementById("selectBtn5"), url: "" },
+  { el: document.getElementById("selectBtn6"), url: "" },
+  { el: document.getElementById("selectBtn7"), url: "https://shinkamigoto0908.github.io/eig-dgc-r7-the_galaxy_express_999/" },
+  { el: document.getElementById("selectBtn8"), url: "https://shinkamigoto0908.github.io/eig-dgc-r7-good_time/" }
+];
 
-      if (btnObj.url) {
-        previewFrame.src = btnObj.url;
-        previewFrame.style.display = "block";
-        noContentMsg.style.display = "none";
-      } else {
-        previewFrame.src = "";
-        previewFrame.style.display = "none";
-        noContentMsg.style.display = "block";
-      }
-    });
-  });
+// 初期状態
+previewFrame.style.display = "none";
+iframeLoader.style.display = "none";
+noContentMsg.style.display = "none";
 
-  // ===== プレビュークリックでフル表示 =====
-  document.getElementById("previewContainer").addEventListener("click", () => {
-    if (previewFrame.src && previewFrame.style.display === "block") {
-      fullscreenFrame.src = previewFrame.src;
-      fullscreenOverlay.style.display = "flex";
-      closeBtn.style.display = "block";
+selectBtns.forEach(btnObj => {
+  btnObj.el.addEventListener("click", () => {
+    selectBtns.forEach(b => b.el.classList.remove("selected"));
+    btnObj.el.classList.add("selected");
+
+    if (btnObj.url) {
+      iframeLoader.style.display = "flex";
+      previewFrame.style.display = "block";
+      noContentMsg.style.display = "none";
+
+      previewFrame.src = btnObj.url;
+      previewFrame.onload = () => { iframeLoader.style.display = "none"; };
+    } else {
+      previewFrame.src = "";
+      previewFrame.style.display = "none";
+      iframeLoader.style.display = "flex";
+      setTimeout(() => { iframeLoader.style.display = "none"; }, 500);
+      noContentMsg.style.display = "flex";
     }
   });
+});
 
-  // ===== 閉じる =====
-  closeBtn.addEventListener("click", () => {
-    fullscreenOverlay.style.display = "none";
-    fullscreenFrame.src = "";
-    closeBtn.style.display = "none";
-  });
-
-  // ===== 右ボタンリンク =====
-  const rightBtnLinks = {
-    svgBtn1: "https://youtu.be/cx8AcBvFzFY?si=-yxDMLH3eKDPQA_u",
-    svgBtn2: "https://youtu.be/MFhvU142d9A?si=pPuRQ0_Jtkn9GADa",
-    svgBtn3: "https://youtu.be/gIWZX7t6L0o?si=NZinObYNe62CoJQh",
-    svgBtn4: "https://youtu.be/CsfMCOEiiZ8?si=xn-rPWrzXKGv43Zo",
-    svgBtn5: "nanchu.pdf",
-    svgBtn9: "manual.pdf",
-    svgBtn10: "https://forms.gle/oY8Wu1FyQgp32zgs6" // ★ 追加
-  };
-
-  for (const id in rightBtnLinks) {
-    const btn = document.getElementById(id);
-    btn.addEventListener("click", () => {
-      window.open(rightBtnLinks[id], "_blank");
-    });
+// プレビュークリックでフル表示
+document.getElementById("previewContainer").addEventListener("click", () => {
+  if (previewFrame.src && previewFrame.style.display === "block") {
+    fullscreenFrame.src = previewFrame.src;
+    fullscreenOverlay.style.display = "flex";
+    closeBtn.style.display = "block";
   }
+});
+
+// 閉じる
+closeBtn.addEventListener("click", () => {
+  fullscreenOverlay.style.display = "none";
+  fullscreenFrame.src = "";
+  closeBtn.style.display = "none";
+});
+
+// 右ボタンリンク
+const rightBtnLinks = {
+  svgBtn1: "https://youtu.be/cx8AcBvFzFY?si=-yxDMLH3eKDPQA_u",
+  svgBtn2: "https://youtu.be/MFhvU142d9A?si=pPuRQ0_Jtkn9GADa",
+  svgBtn3: "https://youtu.be/gIWZX7t6L0o?si=NZinObYNe62CoJQh",
+  svgBtn4: "https://youtu.be/CsfMCOEiiZ8?si=xn-rPWrzXKGv43Zo",
+  svgBtn5: "nanchu.pdf",
+  svgBtn9: "manual.pdf",
+  svgBtn10: "https://forms.gle/oY8Wu1FyQgp32zgs6"
+};
+
+for (const id in rightBtnLinks) {
+  const btn = document.getElementById(id);
+  btn.addEventListener("click", async () => {
+    pageLoader.style.display = "flex";
+    try {
+      await Promise.race([
+        fetch(rightBtnLinks[id], { method: "HEAD", mode: "no-cors" }),
+        new Promise(res => setTimeout(res, 2000))
+      ]);
+    } catch(e) {
+      console.warn("プリロード失敗:", e);
+    }
+    pageLoader.style.display = "none";
+    window.open(rightBtnLinks[id], "_blank");
+  });
+}
 </script>
 </body>
 </html>
