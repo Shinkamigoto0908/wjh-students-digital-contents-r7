@@ -6,315 +6,232 @@
 <title>新上五島町立若松中学校オリジナルデジタルコンテンツ</title>
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
 <style>
-html, body {
-  margin:0; padding:0;
-  width:100vw; height:100vh;
-  background:#ccc;
-  overflow:hidden;
-}
+  html, body {
+    margin: 0; padding: 0;
+    width: 100vw; height: 100vh;
+    overflow: hidden;
+    background: #fff;
+  }
 
-#parentContainer {
-  position:absolute;
-  width:1920px; height:1080px;
-  background:#fff;
-  left:50%; top:50%;
-  transform-origin:50% 50%;
-  overflow:hidden;
-}
+  #parentContainer {
+    position: absolute;
+    width: 1920px;
+    height: 1080px;
+    left: 50%;
+    top: 50%;
+    transform-origin: 50% 50%;
+    transform: translate(-50%, -50%);
+    overflow: hidden;
+    background: #000;
+  }
 
-/* メニュー */
-#menu {
-  position:absolute;
-  top:0; left:0;
-  width:1920px; height:1080px;
-  background:url("svg/interface/wall_paper.svg") no-repeat center center;
-  background-size:cover;
-  display:none;
-}
+  /* 背景 */
+  #background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url('wall_paper.svg') no-repeat center center;
+    background-size: cover;
+    z-index: 0;
+  }
 
-/* メインボタン */
-.menu-btn {
-  position:absolute;
-  width:596px; height:103px;
-  cursor:pointer;
-}
-#btn1 { left:48.9px; top:158.2px; }
-#btn2 { left:48.9px; top:276.4px; }
+  /* 左側ボタン */
+  .menu-btn {
+    position: absolute;
+    width: 354px;
+    height: 70.8px;
+    left: 27.6px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    z-index: 5;
+    transition: all 0.3s ease;
+  }
 
-/* サイドボタン */
-.side-btn {
-  position:absolute;
-  width:357px; height:62px;
-  cursor:pointer;
-  right:1536.3px;
-}
-#btnHelp { top:907.4px; }
-#btnManual { top:807.4px; }
-#btnVersion { top:707.4px; }
+  .menu-btn.selected {
+    width: 384.3px;
+    height: 76.9px;
+  }
 
-/* iframe */
-#contentFrame {
-  position:absolute;
-  top:0; left:0;
-  width:1920px; height:1080px;
-  border:none; outline:none;
-  background:#fff;
-  display:none;
-  z-index:5;
-}
+  /* 右側ボタン */
+  .svg-btn {
+    position: absolute;
+    width: 207.1px;
+    height: 68.9px;
+    left: 1702.8px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    z-index: 4;
+  }
 
-/* close ボタン */
-#closeBtn, #helpClose, #modalClose {
-  width:65px; height:65px;
-  cursor:pointer;
-  position:absolute;
-  top:16px; right:16px;
-  display:none;
-  z-index:9998;
-}
+  /* 半透明ボタン */
+  .semi-transparent {
+    opacity: 0.5;
+  }
 
-/* ヘルプ全画面 */
-#helpFull {
-  display:none; position:absolute;
-  top:0; left:0;
-  width:1920px; height:1080px;
-  background:#fff;
-  z-index:55;
-}
-#helpFull img { width:100%; height:100%; }
+  /* プレビューエリア */
+  #previewContainer {
+    position: absolute;
+    width: 1269.7px;
+    height: 899.2px;
+    left: 411.9px;
+    top: 174px;
+    background: #ddd;
+    overflow: hidden;
+    border-radius: 10px;
+    z-index: 6;
+  }
 
-/* ローディング */
-#loadingOverlay {
-  position:absolute;
-  top:0; left:0;
-  width:1920px; height:1080px;
-  background:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
-}
-.pulse-ring {
-  width:65px; height:65px;
-  border:4px solid #3498db;
-  border-radius:50%;
-  animation:pulse 1s ease-out infinite;
-  opacity:0;
-}
-@keyframes pulse {
-  0% { transform:scale(0); opacity:0.8; }
-  80% { transform:scale(1.5); opacity:0; }
-  100% { opacity:0; }
-}
+  #previewFrame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: none;
+    pointer-events: none;
+  }
 
-/* モーダル横長 */
-#modalContainer {
-  display:none;
-  position:absolute; top:0; left:0;
-  width:1920px; height:1080px;
-  background:rgba(0,0,0,0.7);
-  z-index:100;
-  align-items:center;
-  justify-content:center;
-}
-#modalContent {
-  position:relative;
-  width:800px; max-width:90%; min-width:500px;
-  background:#fff; border-radius:10px;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  padding:30px;
-  font-size:24px;
-}
-#modalInner { text-align:center; padding:10px; }
+  /* フルプレビュー */
+  #fullscreenOverlay {
+    position: absolute;
+    width: 1920px;
+    height: 1080px;
+    left: 0;
+    top: 0;
+    background: rgba(0,0,0,0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+
+  #fullscreenFrame {
+    width: 1920px;
+    height: 1080px;
+    border: none;
+    pointer-events: auto; /* ← 操作可能 */
+  }
+
+  /* 閉じるボタン */
+  #closeBtn {
+    position: absolute;
+    width: 55.3px;
+    height: 55.3px;
+    left: 1858.7px;
+    top: 6.3px;
+    background-image: url('close.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    display: none;
+    z-index: 11;
+  }
 </style>
 </head>
 <body>
-<div id="parentContainer">
+  <div id="parentContainer">
+    <div id="background"></div>
 
-  <!-- ローディング -->
-  <div id="loadingOverlay"><div class="pulse-ring"></div></div>
+    <!-- 左ボタン -->
+    <div id="selectBtn1" class="menu-btn" style="top:139.5px; background-image:url('1_tougo.png');"></div>
+    <div id="selectBtn2" class="menu-btn" style="top:210.3px; background-image:url('2_new_wjh_soran.png');"></div>
 
-  <!-- メニュー -->
-  <div id="menu">
-    <img id="btn1" class="menu-btn" src="svg/interface/1_tougo_aisho.svg" alt="">
-    <img id="btn2" class="menu-btn" src="svg/interface/2_soran.svg" alt="">
-    <img id="btnHelp" class="side-btn" src="svg/interface/contents_help.svg" alt="">
-    <img id="btnManual" class="side-btn" src="svg/interface/manual.svg" alt="">
-    <img id="btnVersion" class="side-btn" src="svg/interface/version.svg" alt="">
-  </div>
+    <!-- 右ボタン -->
+    <div id="svgBtn1" class="svg-btn" style="top:139.5px; background-image:url('1.svg');"></div>
+    <div id="svgBtn2" class="svg-btn" style="top:208.4px; background-image:url('2.svg');"></div>
+    <div id="svgBtn3" class="svg-btn" style="top:277.3px; background-image:url('3.svg');"></div>
+    <div id="svgBtn4" class="svg-btn" style="top:346.2px; background-image:url('4.svg');"></div>
+    <div id="svgBtn5" class="svg-btn" style="top:415.1px; background-image:url('5.svg');"></div>
+    <div id="svgBtn6" class="svg-btn semi-transparent" style="top:484px; background-image:url('6.svg');"></div>
+    <div id="svgBtn8" class="svg-btn semi-transparent" style="top:552.9px; background-image:url('8.svg');"></div>
+    <div id="svgBtn9" class="svg-btn" style="top:621.8px; background-image:url('9.svg');"></div>
+    <div id="svgBtn10" class="svg-btn semi-transparent" style="top:690.7px; background-image:url('10.svg');"></div>
 
-  <!-- iframe -->
-  <iframe id="contentFrame"></iframe>
-
-  <!-- close ボタン -->
-  <img id="closeBtn" src="svg/interface/close.svg" alt="">
-  <img id="helpClose" src="svg/interface/close.svg" alt="">
-  <img id="modalClose" src="svg/interface/close.svg" alt="">
-
-  <!-- モーダル -->
-  <div id="modalContainer">
-    <div id="modalContent">
-      <div id="modalInner"></div>
+    <!-- プレビュー -->
+    <div id="previewContainer">
+      <iframe id="previewFrame"></iframe>
     </div>
-  </div>
 
-  <!-- ヘルプ全画面 -->
-  <div id="helpFull">
-    <img src="svg/interface/modal.svg" alt="">
-  </div>
+    <!-- フルプレビュー -->
+    <div id="fullscreenOverlay">
+      <iframe id="fullscreenFrame"></iframe>
+    </div>
 
-</div>
+    <!-- 閉じるボタン -->
+    <div id="closeBtn"></div>
+  </div>
 
 <script>
-// リサイズ
-function resizeContainer(){
-  const vw=window.innerWidth, vh=window.innerHeight;
-  const baseW=1920, baseH=1080, ratio=baseW/baseH;
-  let scale=(vw/vh>ratio)? vh/baseH: vw/baseW;
-  document.getElementById('parentContainer').style.transform=`translate(-50%,-50%) scale(${scale})`;
-}
-window.addEventListener('resize', resizeContainer);
-window.addEventListener('load', resizeContainer);
+  // ===== リサイズ処理 =====
+  function resizeContainer() {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const baseWidth = 1920;
+    const baseHeight = 1080;
+    const ratio = baseWidth / baseHeight;
+    let scale;
+    if (vw / vh > ratio) scale = vh / baseHeight;
+    else scale = vw / baseWidth;
+    document.getElementById('parentContainer').style.transform =
+      `translate(-50%, -50%) scale(${scale})`;
+  }
+  window.addEventListener('resize', resizeContainer);
+  window.addEventListener('load', resizeContainer);
 
-// 要素
-const menu = document.getElementById("menu");
-const frame = document.getElementById("contentFrame");
-const closeBtn = document.getElementById("closeBtn");
-const loading = document.getElementById("loadingOverlay");
-const btnHelp = document.getElementById("btnHelp");
-const btnManual = document.getElementById("btnManual");
-const btnVersion = document.getElementById("btnVersion");
-const modal = document.getElementById("modalContainer");
-const modalInner = document.getElementById("modalInner");
-const modalClose = document.getElementById("modalClose");
-const helpFull = document.getElementById("helpFull");
-const helpClose = document.getElementById("helpClose");
+  // ===== 左ボタン =====
+  const selectBtns = [
+    { el: document.getElementById("selectBtn1"), url: "https://shinkamigoto0908.github.io/wjh-sf-tougo-kinen-aisho-song-2024/" },
+    { el: document.getElementById("selectBtn2"), url: "https://shinkamigoto0908.github.io/wjh-sf-nanchu-2025/" }
+  ];
+  const previewFrame = document.getElementById("previewFrame");
+  const fullscreenOverlay = document.getElementById("fullscreenOverlay");
+  const fullscreenFrame = document.getElementById("fullscreenFrame");
+  const closeBtn = document.getElementById("closeBtn");
 
-// サイドボタン表示
-function updateSideButtons(){
-  const disp=menu.style.display==="block"?"block":"none";
-  btnHelp.style.display=disp;
-  btnManual.style.display=disp;
-  btnVersion.style.display=disp;
-}
-
-// ローディング時間
-function getRandomDelay(){
-  if(!navigator.onLine) return Infinity;
-  let delay=1500;
-  if(navigator.connection){
-    const type=navigator.connection.effectiveType;
-    if(type==="slow-2g"||type==="2g") delay=Math.random()*(5000-3000)+3000;
-    else if(type==="3g") delay=Math.random()*(3000-2000)+2000;
-    else delay=Math.random()*(2000-1500)+1500;
-  }else{ delay=Math.random()*(2000-1500)+1500; }
-  return delay;
-}
-function hideLoading(delay,callback){
-  if(delay===Infinity) return;
-  setTimeout(()=>{
-    loading.style.display="none";
-    if(callback) callback();
-  },delay);
-}
-
-// 初回ロードは3秒
-window.addEventListener("load",()=>{
-  loading.style.display="flex";
-  hideLoading(3000,()=>{
-    menu.style.display="block"; updateSideButtons();
-  });
-});
-
-// iframe 開閉
-function openIframe(url){
-  loading.style.display="flex";
-  hideLoading(getRandomDelay(),()=>{
-    frame.src=url;
-    frame.style.display="block";
-    menu.style.display="none";
-    closeBtn.style.display="block";
-    updateSideButtons();
-  });
-}
-function closeIframe(){
-  loading.style.display="flex";
-  requestAnimationFrame(()=>{
-    hideLoading(getRandomDelay(),()=>{
-      frame.src="";
-      frame.style.display="none";
-      closeBtn.style.display="none";
-      menu.style.display="block";
-      updateSideButtons();
+  selectBtns.forEach(btnObj => {
+    btnObj.el.addEventListener("click", () => {
+      selectBtns.forEach(b => b.el.classList.remove("selected"));
+      btnObj.el.classList.add("selected");
+      previewFrame.src = btnObj.url;
+      previewFrame.style.display = "block";
     });
   });
-}
 
-// メインボタン
-document.getElementById("btn1").addEventListener("click",()=>{openIframe("https://shinkamigoto0908.github.io/wjh-sf-tougo-kinen-aisho-song-2024/");});
-document.getElementById("btn2").addEventListener("click",()=>{openIframe("https://shinkamigoto0908.github.io/wjh-sf-nanchu-2025/");});
-closeBtn.addEventListener("click",closeIframe);
-
-// ヘルプ全画面
-btnHelp.addEventListener("click",()=>{
-  loading.style.display="flex";
-  requestAnimationFrame(()=>{
-    hideLoading(getRandomDelay(),()=>{
-      helpFull.style.display="block";
-      helpClose.style.display="block";
-      menu.style.display="none";
-      updateSideButtons();
-    });
+  // プレビュークリックでフル表示
+  document.getElementById("previewContainer").addEventListener("click", () => {
+    if (previewFrame.src) {
+      fullscreenFrame.src = previewFrame.src;
+      fullscreenOverlay.style.display = "flex";
+      closeBtn.style.display = "block";
+    }
   });
-});
-helpClose.addEventListener("click",()=>{
-  loading.style.display="flex";
-  requestAnimationFrame(()=>{
-    hideLoading(getRandomDelay(),()=>{
-      helpFull.style.display="none";
-      helpClose.style.display="none";
-      menu.style.display="block";
-      updateSideButtons();
-    });
-  });
-});
 
-// バージョンモーダル
-btnVersion.addEventListener("click",()=>{
-  loading.style.display="flex";
-  requestAnimationFrame(()=>{
-    hideLoading(getRandomDelay(),()=>{
-      modal.style.display="flex";
-      modalInner.innerHTML=`
-        <h2>バージョン:1.0.0</h2>
-        <p>利用可能期間:2025/12/31まで</p>
-        <p>校内ライセンス:利用可能</p>
-        <p>最終アップデート日:2025/09/19</p>
-      `;
-      modalClose.style.display="block";
-      menu.style.display="none";
-      updateSideButtons();
-    });
+  // 閉じる
+  closeBtn.addEventListener("click", () => {
+    fullscreenOverlay.style.display = "none";
+    fullscreenFrame.src = "";
+    closeBtn.style.display = "none";
+    previewFrame.src = "";
+    previewFrame.style.display = "none";
+    selectBtns.forEach(b => b.el.classList.remove("selected"));
   });
-});
 
-// マニュアル
-btnManual.addEventListener("click",()=>{
-  alert("マニュアルPDFは作成中です。リンクは後で設定します。");
-});
+  // ===== 右ボタンリンク =====
+  const rightBtnLinks = {
+    svgBtn1: "https://youtu.be/cx8AcBvFzFY?si=-yxDMLH3eKDPQA_u",
+    svgBtn2: "https://youtu.be/MFhvU142d9A?si=pPuRQ0_Jtkn9GADa",
+    svgBtn3: "https://youtu.be/gIWZX7t6L0o?si=NZinObYNe62CoJQh",
+    svgBtn4: "https://youtu.be/CsfMCOEiiZ8?si=xn-rPWrzXKGv43Zo",
+    svgBtn5: "nanchu.pdf",
+    svgBtn9: "manual.pdf"
+  };
 
-// モーダル閉じる
-modalClose.addEventListener("click",()=>{
-  loading.style.display="flex";
-  requestAnimationFrame(()=>{
-    hideLoading(getRandomDelay(),()=>{
-      modal.style.display="none";
-      modalClose.style.display="none";
-      menu.style.display="block";
-      updateSideButtons();
+  for (const id in rightBtnLinks) {
+    const btn = document.getElementById(id);
+    btn.addEventListener("click", () => {
+      window.open(rightBtnLinks[id], "_blank");
     });
-  });
-});
+  }
 </script>
 </body>
 </html>
