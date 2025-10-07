@@ -25,7 +25,6 @@
     background: #000;
   }
 
-  /* 背景 */
   #background {
     position: absolute;
     width: 100%;
@@ -35,7 +34,7 @@
     z-index: 0;
   }
 
-  /* 左側ボタン */
+  /* 左ボタン */
   .menu-btn {
     position: absolute;
     width: 354px;
@@ -53,7 +52,7 @@
     height: 76.9px;
   }
 
-  /* 右側ボタン */
+  /* 右ボタン */
   .svg-btn {
     position: absolute;
     width: 207.1px;
@@ -65,12 +64,11 @@
     z-index: 4;
   }
 
-  /* 半透明ボタン */
   .semi-transparent {
     opacity: 0.5;
   }
 
-  /* プレビューエリア */
+  /* プレビュー領域 */
   #previewContainer {
     position: absolute;
     width: 1269.7px;
@@ -81,6 +79,9 @@
     overflow: hidden;
     border-radius: 10px;
     z-index: 6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   #previewFrame {
@@ -89,6 +90,13 @@
     border: none;
     display: none;
     pointer-events: none;
+  }
+
+  #noContentMsg {
+    font-size: 35px;
+    color: #333;
+    text-align: center;
+    display: none;
   }
 
   /* フルプレビュー */
@@ -132,9 +140,15 @@
   <div id="parentContainer">
     <div id="background"></div>
 
-    <!-- 左ボタン -->
+    <!-- 左ボタン8枚 -->
     <div id="selectBtn1" class="menu-btn" style="top:139.5px; background-image:url('1_tougo.png');"></div>
     <div id="selectBtn2" class="menu-btn" style="top:210.3px; background-image:url('2_new_wjh_soran.png');"></div>
+    <div id="selectBtn3" class="menu-btn" style="top:281.1px; background-image:url('3.png');"></div>
+    <div id="selectBtn4" class="menu-btn" style="top:351.9px; background-image:url('4.png');"></div>
+    <div id="selectBtn5" class="menu-btn" style="top:422.7px; background-image:url('5.png');"></div>
+    <div id="selectBtn6" class="menu-btn" style="top:493.5px; background-image:url('6.png');"></div>
+    <div id="selectBtn7" class="menu-btn" style="top:564.3px; background-image:url('7.png');"></div>
+    <div id="selectBtn8" class="menu-btn" style="top:635.1px; background-image:url('8.png');"></div>
 
     <!-- 右ボタン -->
     <div id="svgBtn1" class="svg-btn" style="top:139.5px; background-image:url('1.svg');"></div>
@@ -146,12 +160,14 @@
     <div id="svgBtn8" class="svg-btn semi-transparent" style="top:552.9px; background-image:url('8.svg');"></div>
     <div id="svgBtn9" class="svg-btn" style="top:621.8px; background-image:url('9.svg');"></div>
     <div id="svgBtn10" class="svg-btn semi-transparent" style="top:690.7px; background-image:url('10.svg');"></div>
-    <!-- version.svg -->
+
+    <!-- バージョン -->
     <div id="versionBtn" class="svg-btn" style="width:207.1px; height:69px; left:1702.8px; top:1004.2px; background-image:url('version.svg');"></div>
 
     <!-- プレビュー -->
     <div id="previewContainer">
       <iframe id="previewFrame"></iframe>
+      <div id="noContentMsg">表示できるものがありません</div>
     </div>
 
     <!-- フルプレビュー -->
@@ -159,12 +175,12 @@
       <iframe id="fullscreenFrame"></iframe>
     </div>
 
-    <!-- 閉じるボタン -->
+    <!-- 閉じる -->
     <div id="closeBtn"></div>
   </div>
 
 <script>
-  // ===== リサイズ処理 =====
+  // ===== リサイズ =====
   function resizeContainer() {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -180,12 +196,20 @@
   window.addEventListener('resize', resizeContainer);
   window.addEventListener('load', resizeContainer);
 
-  // ===== 左ボタン =====
+  // ===== 左ボタン設定 =====
   const selectBtns = [
     { el: document.getElementById("selectBtn1"), url: "https://shinkamigoto0908.github.io/wjh-sf-tougo-kinen-aisho-song-2024/" },
-    { el: document.getElementById("selectBtn2"), url: "https://shinkamigoto0908.github.io/wjh-sf-nanchu-2025/" }
+    { el: document.getElementById("selectBtn2"), url: "https://shinkamigoto0908.github.io/wjh-sf-nanchu-2025/" },
+    { el: document.getElementById("selectBtn3"), url: "" },
+    { el: document.getElementById("selectBtn4"), url: "" },
+    { el: document.getElementById("selectBtn5"), url: "" },
+    { el: document.getElementById("selectBtn6"), url: "" },
+    { el: document.getElementById("selectBtn7"), url: "https://shinkamigoto0908.github.io/eig-dgc-r7-the_galaxy_express_999/" },
+    { el: document.getElementById("selectBtn8"), url: "https://shinkamigoto0908.github.io/eig-dgc-r7-good_time/" }
   ];
+
   const previewFrame = document.getElementById("previewFrame");
+  const noContentMsg = document.getElementById("noContentMsg");
   const fullscreenOverlay = document.getElementById("fullscreenOverlay");
   const fullscreenFrame = document.getElementById("fullscreenFrame");
   const closeBtn = document.getElementById("closeBtn");
@@ -194,28 +218,33 @@
     btnObj.el.addEventListener("click", () => {
       selectBtns.forEach(b => b.el.classList.remove("selected"));
       btnObj.el.classList.add("selected");
-      previewFrame.src = btnObj.url;
-      previewFrame.style.display = "block";
+
+      if (btnObj.url) {
+        previewFrame.src = btnObj.url;
+        previewFrame.style.display = "block";
+        noContentMsg.style.display = "none";
+      } else {
+        previewFrame.src = "";
+        previewFrame.style.display = "none";
+        noContentMsg.style.display = "block";
+      }
     });
   });
 
-  // プレビュークリックでフル表示
+  // ===== プレビュークリックでフル表示 =====
   document.getElementById("previewContainer").addEventListener("click", () => {
-    if (previewFrame.src) {
+    if (previewFrame.src && previewFrame.style.display === "block") {
       fullscreenFrame.src = previewFrame.src;
       fullscreenOverlay.style.display = "flex";
       closeBtn.style.display = "block";
     }
   });
 
-  // 閉じる
+  // ===== 閉じる =====
   closeBtn.addEventListener("click", () => {
     fullscreenOverlay.style.display = "none";
     fullscreenFrame.src = "";
     closeBtn.style.display = "none";
-    previewFrame.src = "";
-    previewFrame.style.display = "none";
-    selectBtns.forEach(b => b.el.classList.remove("selected"));
   });
 
   // ===== 右ボタンリンク =====
